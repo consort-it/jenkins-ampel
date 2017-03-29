@@ -12,7 +12,9 @@ This piece of code switches lights, that are physically plugged into a USB contr
 
 2. Bundler
 
-3. [SiS-PM  (Silver Shield PM) Control for Linux 3.0](http://sispmctl.sourceforge.net/)
+3. [Controllable USB wall socket](https://www.amazon.de/gp/product/B00BAQZJ4K/ref=oh_aui_detailpage_o06_s01?ie=UTF8&psc=1)
+
+4. [SiS-PM  (Silver Shield PM) Control for Linux 3.0](http://sispmctl.sourceforge.net/)
 
 ## Howto use it?
 
