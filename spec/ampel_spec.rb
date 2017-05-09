@@ -27,41 +27,41 @@ describe Ampel do
         "_class" => "hudson.model.Hudson", "jobs" => [{
             "_class" => "hudson.model.FreeStyleProject",
             "name" => "job1",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "hudson.model.FreeStyleBuild", "number" => 13, "result" => "SUCCESS"
             }
         }, {
             "_class" => "hudson.model.FreeStyleProject",
             "name" => "job2",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "hudson.model.FreeStyleBuild", "number" => 2058, "result" => "SUCCESS"
             }
         }, {
             "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
             "name" => "job3",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 63, "result" => "SUCCESS"
             }
         }, {
             "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
             "name" => "job4",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 476, "result" => "SUCCESS"
             }
         }, {
             "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
             "name" => "job5",
-            "lastBuild" => nil
+            "lastCompletedBuild" => nil
         }, {
             "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
             "name" => "job6",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 44, "result" => "FAILURE"
             }
         }, {
             "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
             "name" => "job7",
-            "lastBuild" => {
+            "lastCompletedBuild" => {
                 "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 15, "result" => "SUCCESS"
             }
         }]

@@ -10,7 +10,7 @@ require 'dotenv/load'
 
 class Ampel
 
-  JENKINS_JOBS_URI = URI("#{ENV['JENKINS_JOBS_URI']}/api/json?tree=jobs[name,lastBuild[number,result]]")
+  JENKINS_JOBS_URI = URI("#{ENV['JENKINS_JOBS_URI']}/api/json?tree=jobs[name,lastCompletedBuild[number,result]]")
   JENKINS_USER = ENV['JENKINS_USER']
   JENKINS_PASS = ENV['JENKINS_PASS']
 
@@ -48,11 +48,11 @@ class Ampel
     red_jobs = []
 
     get_jenkins_job_colors['jobs'].each do |job|
-      next unless job['lastBuild']
+      next unless job['lastCompletedBuild']
 
-      # puts "#{job['name']} has status '#{job['lastBuild']['result']}'"
+      # puts "#{job['name']} has status '#{job['lastCompletedBuild']['result']}'"
 
-      red_jobs << job['name'] if job['lastBuild']['result'] == 'FAILURE'
+      red_jobs << job['name'] if job['lastCompletedBuild']['result'] == 'FAILURE'
     end
 
     return red_jobs
