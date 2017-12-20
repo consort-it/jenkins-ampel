@@ -15,7 +15,12 @@ class Ampel
   JENKINS_PASS = ENV['JENKINS_PASS']
 
   def run(options)
-    if evaluate_jenkins_job_colors.size == 0
+    if ! is_jenkins_healthy?
+      toggle_green_light(false, options)
+      toggle_red_light(true, options)
+
+      puts "ALERT: Jenkins is not responding! Red light is on. :-("
+    elsif evaluate_jenkins_job_colors.size == 0
       toggle_green_light(true, options)
       toggle_red_light(false, options)
 
@@ -28,7 +33,7 @@ class Ampel
     end
   end
 
-  def get_jenkins_job_colors
+  def get_jenkins_response
     Net::HTTP.start(
       JENKINS_JOBS_URI.host,
       JENKINS_JOBS_URI.port,
@@ -38,16 +43,22 @@ class Ampel
       request = Net::HTTP::Get.new JENKINS_JOBS_URI.request_uri
       request.basic_auth JENKINS_USER, JENKINS_PASS
 
-      response = http.request(request)
-
-      return JSON.parse(response.body)
+      return http.request(request)
     end
+  end
+
+  def is_jenkins_healthy?
+    return true if get_jenkins_response.code.to_i == 200
+  end
+
+  def get_jenkins_json_jobs
+    JSON.parse(get_jenkins_response.body)['jobs']
   end
 
   def evaluate_jenkins_job_colors
     red_jobs = []
 
-    get_jenkins_job_colors['jobs'].each do |job|
+    get_jenkins_json_jobs.each do |job|
       next unless job['lastCompletedBuild']
 
       # puts "#{job['name']} has status '#{job['lastCompletedBuild']['result']}'"

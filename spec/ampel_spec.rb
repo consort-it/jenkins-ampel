@@ -68,7 +68,7 @@ describe Ampel do
       }
 
       # WHEN
-      allow(subject).to receive(:get_jenkins_job_colors).and_return(jenkins_api_response)
+      allow(subject).to receive(:get_jenkins_json_jobs).and_return(jenkins_api_response)
 
       # THEN
       expect(subject.evaluate_jenkins_job_colors).to eq ["job6"]
