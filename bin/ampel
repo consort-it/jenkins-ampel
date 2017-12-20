@@ -18,6 +18,10 @@ opt_parser = OptionParser.new do |opts|
     options[:dry_run] = true
   end
 
+  opts.on("-s", "--slack", "send slack message in case of an failure") do
+    options[:slack] = true
+  end
+
   opts.on("-h","--help","help") do
     puts opt_parser
     exit 0

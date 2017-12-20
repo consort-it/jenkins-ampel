@@ -4,6 +4,8 @@
 
 This piece of code switches lights, that are physically plugged into a USB controllable wall socket, on or off, depending on failed Jenkins jobs. This project runs on a Raspberry Pi 1 at Consort IT but feel free to use every system where Ruby is available.
 
+If you want you can make 'Jenkins Ampel' to also send a short message to a Slack channel. Use '-s' flag to enable messaging.
+
 ![Screenshot](jenkins-light.jpg)
 
 ## Dependencies
@@ -32,12 +34,25 @@ touch .env
 JENKINS_JOBS_URI=https://your.jenkins.uri
 JENKINS_USER=jenkins-user
 JENKINS_PASS=jenkins-pass
+SLACK_HOOK_URI=https://hooks.slack.com/services/foo/bar
 ```
 
 Fire it up.
 
 ```
 bin/ampel
+```
+
+If you want to send a message to a Slack channel, use:
+
+```
+bin/ampel -s
+```
+
+If you want to use 'Jenkins Ampel' locally, use:
+
+```
+bin/ampel -d
 ```
 
 Add a cron job to your system.
@@ -49,7 +64,7 @@ Add a cron job to your system.
 ## Ouput
 
 ```
-OK: Everything is fine! Green light is on. :-)
+OK: Everything is fine again! Green light is on. :-)
 ```
 
 ## Contribute

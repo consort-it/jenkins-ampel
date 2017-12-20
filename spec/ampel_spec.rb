@@ -24,54 +24,23 @@ describe Ampel do
     it 'returns an array of job names whose last build failed' do
       # GIVEN
       jenkins_api_response = {
-        "_class" => "hudson.model.Hudson", "jobs" => [{
-            "_class" => "hudson.model.FreeStyleProject",
-            "name" => "job1",
-            "lastCompletedBuild" => {
-                "_class" => "hudson.model.FreeStyleBuild", "number" => 13, "result" => "SUCCESS"
-            }
-        }, {
-            "_class" => "hudson.model.FreeStyleProject",
-            "name" => "job2",
-            "lastCompletedBuild" => {
-                "_class" => "hudson.model.FreeStyleBuild", "number" => 2058, "result" => "SUCCESS"
-            }
-        }, {
-            "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
-            "name" => "job3",
-            "lastCompletedBuild" => {
-                "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 63, "result" => "SUCCESS"
-            }
-        }, {
-            "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
-            "name" => "job4",
-            "lastCompletedBuild" => {
-                "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 476, "result" => "SUCCESS"
-            }
-        }, {
-            "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
-            "name" => "job5",
-            "lastCompletedBuild" => nil
-        }, {
-            "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
-            "name" => "job6",
-            "lastCompletedBuild" => {
-                "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 44, "result" => "FAILURE"
-            }
-        }, {
-            "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowJob",
-            "name" => "job7",
-            "lastCompletedBuild" => {
-                "_class" => "org.jenkinsci.plugins.workflow.job.WorkflowRun", "number" => 15, "result" => "SUCCESS"
-            }
-        }]
+          "_class"=>"hudson.model.FreeStyleProject", "name"=>"job1", "lastCompletedBuild"=>{"_class"=>"hudson.model.FreeStyleBuild", "number"=>112, "result"=>"SUCCESS"}
+      },
+      {
+          "_class"=>"hudson.model.FreeStyleProject", "name"=>"job2", "lastCompletedBuild"=>nil
+      },
+      {
+          "_class"=>"hudson.model.FreeStyleProject", "name"=>"job3", "lastCompletedBuild"=>{"_class"=>"hudson.model.FreeStyleBuild", "number"=>27, "result"=>"FAILURE"}
+      },
+      {
+          "_class"=>"org.jenkinsci.plugins.workflow.job.WorkflowJob", "name"=>"job4", "lastCompletedBuild"=>{"_class"=>"org.jenkinsci.plugins.workflow.job.WorkflowRun", "number"=>121, "result"=>"SUCCESS"}
       }
 
       # WHEN
       allow(subject).to receive(:get_jenkins_json_jobs).and_return(jenkins_api_response)
 
       # THEN
-      expect(subject.evaluate_jenkins_job_colors).to eq ["job6"]
+      expect(subject.evaluate_jenkins_job_colors).to eq ["job3"]
       expect(subject.evaluate_jenkins_job_colors.size).to eq 1
     end
   end
@@ -156,6 +125,50 @@ describe Ampel do
   #     expect(subject.get_jenkins_job_colors).to respond_to(:each)
   #   end
   # end
+  #
+  
+  describe '#send_slack_message' do
+    it 'should create a status file called .slack_state' do
+      options = {:slack=>true}
+
+      allow(File).to receive(:exists?).with('.slack_state').and_return(false)
+
+      subject.send_slack_message(options, "foo bar")
+
+      expect(File.exist?('.slack_state')).to be true
+    end
+
+    it 'should create a status file called .slack_state with "foo bar" content' do
+      options = {:slack=>true}
+
+      allow(File).to receive(:exists?).with('.slack_state').and_return(false)
+
+      subject.send_slack_message(options, "foo bar")
+
+      expect(File.read(".slack_state")).to eq "foo bar"
+    end
+
+    it 'should not send a message if current status is equal to last status' do
+      options = {:slack=>true}
+
+      allow(File).to receive(:exists?).with('.slack_state').and_return true
+      allow(File).to receive(:read).with('.slack_state').and_return "foo bar"
+
+      subject.send_slack_message(options, "foo bar")
+
+      expect(RestClient).not_to receive(:post)
+    end
+
+    it 'should send a message if current status is different from last status' do
+      options = {:slack=>true}
+
+      allow(File).to receive(:exists?).with('.slack_state').and_return true
+      allow(File).to receive(:read).with('.slack_state').and_return "foo bar"
+
+      expect(RestClient).to receive(:post)
+      subject.send_slack_message(options, "john doe")
+    end
+  end
 
   describe '#run' do
     it 'says that everything is fine if we have no failed jobs' do
@@ -168,7 +181,7 @@ describe Ampel do
 
       expect do
         subject.run(options)
-      end.to output("OK: Everything is fine! Green light is on. :-)\n").to_stdout
+      end.to output("OK: Everything is fine again! Green light is on. :-)\n").to_stdout
     end
 
     it 'says that we have failed jobs if they exist' do
@@ -182,6 +195,20 @@ describe Ampel do
       expect do
         subject.run(options)
       end.to output("ALERT: 2 failing jenkins jobs! Red light is on. :-(\n").to_stdout
+    end
+
+    it 'says that jenkins is not responding' do
+      options = {:dry_run=>false}
+
+      allow(subject).to receive(:is_jenkins_healthy?).and_return false
+
+      allow(subject).to receive(:toggle_green_light)
+      allow(subject).to receive(:toggle_red_light)
+
+      expect do
+        subject.run(options)
+      end.to output("ALERT: Jenkins is not responding! Red light is on. :-(\n").to_stdout
+
     end
   end
 

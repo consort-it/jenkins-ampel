@@ -7,29 +7,40 @@ require 'uri'
 require 'optparse'
 require 'active_support/inflector'
 require 'dotenv/load'
+require 'rest-client'
 
 class Ampel
 
   JENKINS_JOBS_URI = URI("#{ENV['JENKINS_JOBS_URI']}/api/json?tree=jobs[name,lastCompletedBuild[number,result]]")
   JENKINS_USER = ENV['JENKINS_USER']
   JENKINS_PASS = ENV['JENKINS_PASS']
+  SLACK_HOOK_URI = ENV['SLACK_HOOK_URI']
 
   def run(options)
     if ! is_jenkins_healthy?
+      message = "ALERT: Jenkins is not responding! Red light is on. :-("
+
       toggle_green_light(false, options)
       toggle_red_light(true, options)
+      send_slack_message(options, message)
 
-      puts "ALERT: Jenkins is not responding! Red light is on. :-("
+      puts message
     elsif evaluate_jenkins_job_colors.size == 0
+      message = "OK: Everything is fine again! Green light is on. :-)"
+
       toggle_green_light(true, options)
       toggle_red_light(false, options)
+      send_slack_message(options, message)
 
-      puts "OK: Everything is fine! Green light is on. :-)"
+      puts message
     else
+      message = "ALERT: #{evaluate_jenkins_job_colors.size} failing jenkins #{cpluralize(evaluate_jenkins_job_colors.size, 'job')}! Red light is on. :-("
+
       toggle_green_light(false, options)
       toggle_red_light(true, options)
+      send_slack_message(options, message)
 
-      puts "ALERT: #{evaluate_jenkins_job_colors.size} failing jenkins #{cpluralize(evaluate_jenkins_job_colors.size, 'job')}! Red light is on. :-("
+      puts message
     end
   end
 
@@ -111,6 +122,21 @@ class Ampel
   def cpluralize(number, text)
     return text.pluralize if number != 1
     return text.singularize if number == 1
+  end
+
+  def send_slack_message(options, message)
+    if options[:slack] == true
+      channel = "#ampel"
+      slack_state_file = ".slack_state"
+
+      if File.exists?(slack_state_file)
+        unless File.read(slack_state_file) == message
+          RestClient.post("#{SLACK_HOOK_URI}", {'channel': channel, 'text': message}.to_json, {content_type: :json, accept: :json})
+        end
+      end
+
+      File.write(slack_state_file, message)
+    end
   end
 
 end
