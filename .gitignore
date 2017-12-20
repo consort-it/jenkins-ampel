@@ -2,3 +2,5 @@ Gemfile.lock
 coverage
 tmp
 .env
+.idea
+.slack_state
