@@ -131,7 +131,7 @@ class Ampel
 
       if File.exists?(slack_state_file)
         unless File.read(slack_state_file) == message
-          RestClient.post("#{SLACK_HOOK_URI}", {'channel' => channel, 'text' => message}.to_json, {content_type => :json, accept => :json})
+          RestClient.post("#{SLACK_HOOK_URI}", {'channel' => channel, 'text' => message}.to_json, {content_type: :json, accept: :json})
         end
       end
 
